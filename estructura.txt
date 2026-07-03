@@ -1,0 +1,70 @@
+opinionscope/
+├── backend/
+│   ├── app/
+│   │   ├── __init__.py
+│   │   │
+│   │   ├── core/               # CONFIGURACIONES GLOBALES
+│   │   │   ├── __init__.py
+│   │   │   ├── config.py       # Lee variables de entorno (.env) y tokens de X
+│   │   │   └── security.py     # Cifrado y validación si agregas login posterior
+│   │   │
+│   │   ├── database/           # CAPA DE PERSISTENCIA (CONEXIONES)
+│   │   │   ├── __init__.py
+│   │   │   ├── session.py      # Gestor de conexiones a la base de datos (Engine)
+│   │   │   └── base.py         # Importa todos los modelos para las migraciones
+│   │   │
+│   │   ├── models/             # MODELOS DE BASE DE DATOS (ORMs)
+│   │   │   ├── __init__.py
+│   │   │   ├── post.py         # Tabla 'posts' (datos crudos y clasificación)
+│   │   │   └── trend.py        # Tabla 'trends_aggregated' (métrica por bloques de tiempo)
+│   │   │
+│   │   ├── schemas/            # VALIDACIÓN Y TIPADO DE DATOS (Pydantic)
+│   │   │   ├── __init__.py
+│   │   │   ├── post.py         # Esqueleto de cómo debe lucir un tweet antes/después de la IA
+│   │   │   └── trend.py        # Validadores para las gráficas de series de tiempo
+│   │   │
+│   │   ├── services/           # LÓGICA DE NEGOCIO Y PIPELINES
+│   │   │   ├── __init__.py
+│   │   │   ├── scraper_agent.py# Hilo en segundo plano que escucha/simula el stream de X
+│   │   │   └── nlp_processor.py# Limpieza de texto (Regex) e inferencia del modelo de IA
+│   │   │
+│   │   └── api/                # PUNTOS DE ACCESO (ENDPOINTS)
+│   │       ├── __init__.py
+│   │       ├── v1/
+│   │       │   ├── __init__.py
+│   │       │   ├── api.py      # Enrutador principal de la versión 1 de la API
+│   │       │   └── endpoints/
+│   │       │       ├── dashboard.py # Datos generales, KPIs y WebSockets en tiempo real
+│   │       │       └── trends.py    # Filtros avanzados e histórico agregado
+│   │       │
+│   │       └── main.py         # Inicializador central de FastAPI
+│   │
+│   ├── requirements.txt        # Librerías de Python (fastapi, uvicorn, sqlalchemy, transformers...)
+│   └── .env                    # Llaves secretas y credenciales locales
+│
+└── frontend/                   # ARQUITECTURA REACTIVADA (SPA)
+    ├── index.html
+    ├── package.json
+    ├── vite.config.js
+    ├── tailwind.config.js
+    └── src/
+        ├── main.jsx            # Punto de entrada de React
+        ├── App.jsx             # Enrutador de pantallas (React Router)
+        ├── index.css           # Inyección de utilidades de Tailwind CSS
+        │
+        ├── components/         # COMPONENTES REUTILIZABLES DE UI
+        │   ├── common/         # Elementos globales (Sidebar.jsx, Layout.jsx, Spinner.jsx)
+        │   ├── dashboard/      # Tarjetas de KPI (KpiCard.jsx, LiveFeedTable.jsx)
+        │   └── charts/         # Gráficos abstractos (TimeLineChart.jsx, EmotionDoughnut.jsx)
+        │
+        ├── hooks/              # LÓGICA DE ESTADO SEPARADA (CUSTOM HOOKS)
+        │   ├── useWebSocket.js # Escucha el canal de Python para actualizar la interfaz solo al recibir datos
+        │   └── useAnalytics.js # Maneja peticiones HTTP, paginación y caché
+        │
+        ├── services/           # ABSTRACCIÓN DE LLAMADAS API (Axios / Fetch)
+        │   └── apiClient.js    # Instancia centralizada con la URL base del backend
+        │
+        └── views/              # PANTALLAS COMPLETAS
+            ├── DashboardView.jsx # Vista principal con métricas vivas
+            ├── TrendsView.jsx    # Vista de exploración histórica y filtros
+            └── SettingsView.jsx  # Configuración de palabras clave a rastrear
