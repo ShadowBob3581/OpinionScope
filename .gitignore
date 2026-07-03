@@ -1,0 +1,17 @@
+# Dependencias de Node y Python
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+
+# Archivos de configuración local y credenciales (¡Seguridad!)
+.env
+.env.local
+.vscode/
+.idea/
+
+# Datos persistentes de Docker (si se crean localmente)
+postgres_data/
+mysql_data/
