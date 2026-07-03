@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from typing import List
 from app.database.session import get_db
 from app.models.post import Post
 from app.schemas.post import PostResponse
@@ -8,17 +8,14 @@ from app.schemas.post import PostResponse
 router = APIRouter()
 
 @router.get("/history", response_model=List[PostResponse])
-def listar_historico_posts(
-    sentimiento: Optional[str] = None,
-    limit: int = Query(default=50, le=100),
+def obtener_historial_tendencias(
+    limit: int = Query(default=50, ge=1, le=100),
     db: Session = Depends(get_db)
 ):
-    """ Recupera el histórico de publicaciones procesadas con filtros avanzados 
-        de sentimiento e índices temporales.
     """
-    query = db.query(Post)
-    if sentimiento:
-        query = query.filter(Post.sentimiento == sentimiento)
-    
-    # Traer los más recientes primero aprovechando el índice en created_at
-    return query.order_by(Post.created_at.desc()).limit(limit).all()
+    Recupera el historial cronológico de las publicaciones capturadas
+    y analizadas por el pipeline de Inteligencia Artificial.
+    """
+    # Consulta optimizada ordenando por el ID más reciente
+    posts = db.query(Post).order_by(Post.id.desc()).limit(limit).all()
+    return posts

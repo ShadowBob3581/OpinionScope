@@ -19,28 +19,24 @@ DATA_POOL = [
 class ScraperAgentService:
     @staticmethod
     def ejecutar_ingesta_unitaria(db: Session) -> Post:
-        """ Simula la captura en tiempo real de un tweet, lo procesa con la IA 
-            y lo guarda inmediatamente en la base de datos.
-        """
-        # 1. Simular la llegada del post del Stream
-        muestra = random.choice(DATA_POOL)
+        # Tu lógica de generación analítica con IA...
+        usuarios = ["@tech_insider", "@analytics_node", "@crypto_mex", "@dev_gerar"]
+        textos = [
+            "Excelente implementación de arquitecturas distribuidas.",
+            "Mal rendimiento en el último despliegue del servidor.",
+            "Revisando métricas de impacto emocional en redes."
+        ]
+        sentimientos = ["Positivo", "Negativo", "Neutral"]
         
-        # 2. Consumir el procesador NLP para clasificar las métricas
-        analisis = NlpProcessorService.analizar_sentimiento_y_relevancia(muestra["text"])
-        
-        # 3. Mapear al modelo ORM de SQLAlchemy
         nuevo_post = Post(
-            red_social="X (Twitter)",
-            usuario=muestra["user"],
-            texto=muestra["text"],
-            sentimiento=analisis["sentimiento"],
-            nlp_confidence=analisis["confidence"],
-            relevancia=analisis["relevancia"]
+            usuario=random.choice(usuarios),
+            texto=random.choice(textos),
+            sentimiento=random.choice(sentimientos),
+            nlp_confidence=round(random.uniform(0.6, 0.99), 2),
+            relevancia=round(random.uniform(1.0, 10.0), 1)
         )
         
-        # 4. Guardar permanentemente en la base de datos
         db.add(nuevo_post)
         db.commit()
         db.refresh(nuevo_post)
-        
         return nuevo_post

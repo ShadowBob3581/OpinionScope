@@ -1,3 +1,4 @@
+import urllib.parse
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field, computed_field
 
@@ -17,28 +18,26 @@ class Settings(BaseSettings):
     
     # Propiedad computada matemática para armar la URL de SQLAlchemy automáticamente
     @computed_field
+    @computed_field
     @property
     def DATABASE_URL(self) -> str:
-        # Si estás desarrollando local fuera de docker puedes usar sqlite, 
-        # pero aquí ya se prepara para la arquitectura Postgres/MySQL de producción.
-        return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-    
-    # Configuración de Seguridad
-    SECRET_KEY: str
-    ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    
-    # Parámetros de la IA y API de X
-    NLP_MODEL_NAME: str
-    MIN_RELEVANCE_THRESHOLD: float = Field(default=5.0, ge=0.0, le=10.0)
-    X_API_KEY: str
-    X_API_SECRET_KEY: str
-    X_BEARER_TOKEN: str
+        # Codifica la contraseña para que ignore caracteres como '@' o '/'
+        password_encoded = urllib.parse.quote_plus(self.DB_PASSWORD)
+        
+        # SI ESTÁS EN DESARROLLO LOCAL (Fuera de Docker), usamos SQLite automáticamente
+        # para que puedas probar el backend sin levantar contenedores pesados aún.
+        if self.DB_HOST == "db" and self.DB_USER == "generalAdmin":
+            return "sqlite:///./opinionscope.db"
+            
+        # Cuando corra dentro de Docker, usará la URL real de Postgres
+        return f"postgresql://{self.DB_USER}:{password_encoded}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     model_config = SettingsConfigDict(
         env_file=".env", 
         env_file_encoding="utf-8", 
         extra="ignore"
     )
+
+settings = Settings()
 
 settings = Settings()

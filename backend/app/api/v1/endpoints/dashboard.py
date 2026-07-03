@@ -2,7 +2,7 @@ import asyncio
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.database.session import get_db
+from app.database.session import get_db, SessionLocal  # <--- Importamos SessionLocal
 from app.models.post import Post
 from app.schemas.trend import DashboardKpisResponse
 from app.services.scraper_agent import ScraperAgentService
@@ -22,7 +22,6 @@ def obtener_kpis_dashboard(db: Session = Depends(get_db)):
             indice_relevancia_promedio=0.0
         )
     
-    # Agrupación eficiente por columna de sentimiento
     conteos = db.query(Post.sentimiento, func.count(Post.id)).group_by(Post.sentimiento).all()
     dict_conteos = {sentimiento: c for sentimiento, c in conteos}
     
@@ -41,11 +40,14 @@ def obtener_kpis_dashboard(db: Session = Depends(get_db)):
     )
 
 @router.websocket("/ws/live")
-async def websocket_stream_live(websocket: WebSocket, db: Session = Depends(get_db)):
+async def websocket_stream_live(websocket: WebSocket):
     """ Abre un canal persistente bidireccional que inyecta datos analizados 
         por la IA directamente a la UI de React en tiempo real.
     """
     await websocket.accept()
+    
+    # Creamos la sesión de base de datos de forma manual y segura aislada de la firma OpenAPI
+    db = SessionLocal()
     try:
         while True:
             # 1. Ejecutar el pipeline de ingesta, IA y guardado en SQL
@@ -69,5 +71,7 @@ async def websocket_stream_live(websocket: WebSocket, db: Session = Depends(get_
             await asyncio.sleep(4)
             
     except WebSocketDisconnect:
-        # El frontend cerró la pestaña o recargó la página, cerramos el túnel limpiamente
+        # El frontend cerró la pestaña limpiamente
         pass
+    finally:
+        db.close() # <--- Nos aseguramos de cerrar la conexión pase lo que pase
